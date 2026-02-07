@@ -1,5 +1,32 @@
-final-merged-model/
-__pycache__/
-*.pyc
+# Git
 .git
 .github
+.gitignore
+.dockerignore
+
+# Python
+__pycache__/
+*.py[cod]
+*.so
+*.egg-info/
+.eggs/
+dist/
+build/
+
+# Virtual Environment
+venv/
+env/
+.venv/
+.env
+
+# IDEs
+.idea/
+.vscode/
+
+# Project specific
+final-merged-model/
+models/
+data/
+logs/
+Dockerfile
+README.md
