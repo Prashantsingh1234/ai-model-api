@@ -1,31 +1,51 @@
 from fastapi import FastAPI, HTTPException
+from pydantic import BaseModel
 from transformers import AutoTokenizer, AutoModelForCausalLM
 import torch
 import os
 
-# Hugging Face model repo (YOUR MODEL)
+# ------------------------
+# CONFIG
+# ------------------------
 HF_MODEL_ID = "PrashantKumarSingh/my-finetuned-model"
+HF_TOKEN = os.getenv("HF_TOKEN")
 
-# Create FastAPI app
+# ------------------------
+# FASTAPI APP
+# ------------------------
 app = FastAPI(
     title="Fine-Tuned LLM API",
-    description="Developing Inference API for a fine-tuned language model",
+    description="Inference API for a fine-tuned language model",
     version="1.0"
 )
 
-# Load tokenizer
-tokenizer = AutoTokenizer.from_pretrained(HF_MODEL_ID)
+# ------------------------
+# REQUEST SCHEMA
+# ------------------------
+class GenerateRequest(BaseModel):
+    prompt: str
+    max_tokens: int = 100
 
-# Load model
-model = AutoModelForCausalLM.from_pretrained(
+# ------------------------
+# LOAD MODEL (CPU SAFE)
+# ------------------------
+tokenizer = AutoTokenizer.from_pretrained(
     HF_MODEL_ID,
-    torch_dtype=torch.float16,
-    device_map="auto"
+    token=HF_TOKEN
 )
 
-# Set evaluation mode
+model = AutoModelForCausalLM.from_pretrained(
+    HF_MODEL_ID,
+    token=HF_TOKEN,
+    torch_dtype=torch.float32,   # CPU-safe
+    device_map="cpu"             # force CPU
+)
+
 model.eval()
 
+# ------------------------
+# ROUTES
+# ------------------------
 @app.get("/")
 def health_check():
     return {
@@ -34,15 +54,18 @@ def health_check():
     }
 
 @app.post("/generate")
-def generate(prompt: str, max_tokens: int = 100):
+def generate_text(request: GenerateRequest):
     try:
-        inputs = tokenizer(prompt, return_tensors="pt")
+        inputs = tokenizer(
+            request.prompt,
+            return_tensors="pt"
+        )
         inputs = inputs.to(model.device)
 
         with torch.no_grad():
             output = model.generate(
                 **inputs,
-                max_new_tokens=max_tokens,
+                max_new_tokens=request.max_tokens,
                 temperature=0.7,
                 do_sample=True
             )
@@ -53,7 +76,7 @@ def generate(prompt: str, max_tokens: int = 100):
         )
 
         return {
-            "prompt": prompt,
+            "prompt": request.prompt,
             "response": response
         }
 
