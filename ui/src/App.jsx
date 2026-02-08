@@ -11,7 +11,7 @@ function App() {
     setResponse("");
 
     try {
-      const res = await fetch("http://82.25.104.12/generate", {
+      const res = await fetch("http://82.25.104.12:8000/generate", {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
