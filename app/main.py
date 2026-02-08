@@ -25,7 +25,12 @@ app = FastAPI(
 # ------------------------
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=["*"],  # In production, restrict this
+    allow_origins=[
+        "http://localhost",
+        "http://localhost:3000",
+        "http://localhost:5173",   # Vite default
+        "http://82.25.104.12",
+    ],  # In production, restrict this
     allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],
