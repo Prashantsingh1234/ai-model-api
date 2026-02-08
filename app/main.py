@@ -1,4 +1,5 @@
 from fastapi import FastAPI, HTTPException
+from fastapi.middleware.cors import CORSMiddleware
 from pydantic import BaseModel
 from transformers import AutoTokenizer, AutoModelForCausalLM
 import torch
@@ -17,6 +18,17 @@ app = FastAPI(
     title="Fine-Tuned LLM API",
     description="Inference API for a fine-tuned language model",
     version="1.0"
+)
+
+# ------------------------
+# MIDDLEWARE
+# ------------------------
+app.add_middleware(
+    CORSMiddleware,
+    allow_origins=["*"],  # In production, restrict this
+    allow_credentials=True,
+    allow_methods=["*"],
+    allow_headers=["*"],
 )
 
 # ------------------------
