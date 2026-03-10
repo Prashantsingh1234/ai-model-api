@@ -1,0 +1,25 @@
+version: '3.8'
+
+services:
+  api:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: llm-backend-api
+    ports:
+      - "8000:8000"
+    environment:
+      # Pass your Hugging Face token here or create a .env file at the root
+      - HF_TOKEN=${HF_TOKEN}
+    restart: unless-stopped
+
+  ui:
+    build:
+      context: ./ui
+      dockerfile: Dockerfile
+    container_name: llm-frontend-ui
+    ports:
+      - "80:80" # Maps the internal Nginx port to host port 80
+    depends_on:
+      - api
+    restart: unless-stopped
